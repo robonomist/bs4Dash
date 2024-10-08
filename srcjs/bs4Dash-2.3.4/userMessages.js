@@ -13,12 +13,15 @@ Shiny.addCustomMessageHandler("user-messages", function(message) {
       text = Shiny.renderHtml(content.text.html, $([]), content.text.dependencies).html;
     } 
   }
-  
-  // unbind all
-  Shiny.unbindAll();
-  
+
+  // Get the chat messages
+  var $messages = $("#" + id);
+  var $msg;
+
   if (action === "remove") {
-    $("#" + id).find(".direct-chat-msg").eq(index - 1).remove();
+    $msg = $messages.find(".direct-chat-msg").eq(index - 1);
+    Shiny.unbindAll($msg);
+    $msg.remove();
   } else if (action === "add") {
     var author = content.author, date = content.date, image = content.image, type = content.type;
     
@@ -43,9 +46,13 @@ Shiny.addCustomMessageHandler("user-messages", function(message) {
     }
       
     // append message
-    $("#" + id).find(".direct-chat-messages").append(newMessageWrapper);
+    $messages.find(".direct-chat-messages").append(newMessageWrapper);
+    $msg = $messages.find(".direct-chat-msg").last();
+    Shiny.initializeInputs($msg[0]);
+    Shiny.bindAll($msg);
   } else if (action === "update") {
-      
+    $msg = $messages.find(".direct-chat-msg").eq(index - 1)
+    Shiny.unbindAll($msg);
     // today's date
     var d = new Date();
     var month = d.getMonth() + 1;
@@ -56,14 +63,12 @@ Shiny.addCustomMessageHandler("user-messages", function(message) {
       
     // we assume only text may be updated. Does not make sense to modify author/date
     
-    $("#" + id)
+    $messages
       .find(".direct-chat-text")
       .eq(index - 1)
       .replaceWith('<div class="direct-chat-text"><small class="text-red">(modified: ' + today +')</small><br>' +  text + '</div>');
+    Shiny.initializeInputs($msg[0]);
+    Shiny.bindAll($msg);
   }
-    
-  // Calls .initialize() for all of the input objects in all input bindings,
-  // in the given scope (document)
-  Shiny.initializeInputs();
-  Shiny.bindAll(); // bind all inputs/outputs
+
 });
